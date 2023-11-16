@@ -52,13 +52,15 @@ input {
   margin-top: 10px;
 }
 
-ul {
+.chat {
   list-style-type: none;
   width: 600px;
-  height: 400px;
-  background-color: whitesmoke;
+  height: 418px;
+  background-color: #333;
   padding: 5px;
   overflow-y: scroll;
+  color: whitesmoke;
+  border-radius: 5px;
 }
 
 li {
@@ -70,6 +72,16 @@ li {
 
 h2 {
   text-align: center;
+}
+
+.active-users {
+  list-style-type: none;
+  height: fit-content;
+  width: 350px;
+  background: #333;
+  color: whitesmoke;
+  border-radius: 5px;
+  padding: 10px;
 }
 
 .status-head {
