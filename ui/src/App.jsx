@@ -7,15 +7,18 @@ function App() {
   const [msg,setMsg] = useState("");
   const [connected,setConnected] = useState(false);
   const [inbox,setInbox] = useState([]);
-  const [serverStats,setServerStats] = useState(null);
   const [clientName,setClientName] = useState(null);
   const [usernameState,setUsernameState] = useState(true);
   const [activeUsers,setActiveUsers] = useState([]);
   const txtArea = useRef(null);
 
   useEffect(() => {
-    const socket = io("http://localhost:3000");
+    const socket = io(import.meta.env.VITE_URL_SERVER);
+    socket.emit("server_stats/active_users", {});
+    setClient(socket);
+
     socket.on("connected", () => {
+      console.log("sending request");
       setConnected(true);
     });
 
@@ -25,29 +28,19 @@ function App() {
       setInbox([]);
       setMsg("");
       setClient(null);
-      setServerStats(null);
       setUsernameState(true);
       setActiveUsers([]);
     });
 
-    setClient(socket);
     socket.on("connect", () => {
       setConnected(true);
     });
 
-    socket.on("message", (obj) => {
+    socket.on("message/receive_public", (obj) => {
       setInbox(prev => [...prev,obj]);
     });
 
-    socket.on("server_response", (obj_msg) => {
-      setServerStats(obj_msg);
-    });
-
-    socket.on("client_status", (obj) => {
-      setServerStats({...serverStats, "totalClients" : obj.clients_available})
-    });
-
-    socket.on("active_users", (obj) => {
+    socket.on("client/active_users", (obj) => {
       setActiveUsers(obj.active_users);
     })
 
@@ -70,7 +63,7 @@ function App() {
       };
 
       setInbox(prev => [...prev,tmpMsgObj])
-      client.emit("message", tmpMsgObj);
+      client.emit("message/post_public", tmpMsgObj);
       txtArea.current.value = "";
       setMsg("");
     } else {
@@ -107,7 +100,7 @@ function App() {
     }
 
     if (client && clientName.lenght !== 0) {
-      client.emit("add_user", {name : clientName});
+      client.emit("server_stats/add_user", {name : clientName});
     }
     setUsernameState(false);
   }
@@ -140,7 +133,7 @@ function App() {
               : 
               <h4>Status : Disconnected</h4>
             }
-            {serverStats !== null && <h4>Available: {serverStats.totalClients}</h4>}
+            <h4>Available: {activeUsers.length}</h4>
           </div>
           <textarea ref={txtArea} placeholder='Write your message...' onInput={handleInput}></textarea>
           <button onClick={handleSendMsg}>Send</button>  
